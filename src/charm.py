@@ -76,7 +76,9 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
                     'startup': 'enabled',
                     # 'user': 'runner',
                     'environment': {
-                        'RUNNER_NAME': container.name,
+                        'RUNNER_NAME': '{}-{}'.format(
+                            self.model.name,
+                            self.unit.name.replace('/', '-')),
                         'REPO_URL': self.model.config['repository'],
                         'RUNNER_TOKEN': self.model.config['token'],
                         'LABELS': self.model.config.get('labels', ''),

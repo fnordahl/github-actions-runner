@@ -71,7 +71,6 @@ class TestCharm(test_utils.PatchHelper):
         })
         self.maxDiff = None
         container = unittest.mock.MagicMock()
-        container.name = 'github-actions-runner'
         expected_plan = {
             'summary': 'GitHub Actions Runner layer',
             'description': 'pebble config layer for GitHub Actions Runner',
@@ -83,7 +82,7 @@ class TestCharm(test_utils.PatchHelper):
                         os.path.join(charm.RUNNER_HOME, 'run.sh')),
                     'startup': 'enabled',
                     'environment': {
-                        'RUNNER_NAME': 'github-actions-runner',
+                        'RUNNER_NAME': 'None-github-actions-runner-0',
                         'REPO_URL': 'fakerepo',
                         'RUNNER_TOKEN': 'faketoken',
                         'LABELS': 'fakelabel'
@@ -158,7 +157,7 @@ class TestCharm(test_utils.PatchHelper):
                         os.path.join(charm.RUNNER_HOME, 'run.sh')),
                     'startup': 'enabled',
                     'environment': {
-                        'RUNNER_NAME': 'github-actions-runner',
+                        'RUNNER_NAME': 'None-github-actions-runner-0',
                         'REPO_URL': 'fakerepo',
                         'LABELS': 'fakelabel',
                         'RUNNER_TOKEN': 'faketoken'
