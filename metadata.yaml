@@ -1,0 +1,20 @@
+# Copyright 2021 Canonical
+# See LICENSE file for licensing details.
+name: github-actions-runner
+description: |
+  Host your own fleet of GitHub Actions runners.
+
+  Please refer to https://docs.github.com/en/actions/hosting-your-own-runners
+  for more information.
+summary: |
+  Host your own fleet of GitHub Actions runners.
+
+containers:
+  github-actions-runner:
+    resource: github-actions-runner-image
+
+resources:
+  github-actions-runner-image:
+    type: oci-image
+    description: |
+      OCI image for GitHub Actions Runner (myoung34/github-runner)

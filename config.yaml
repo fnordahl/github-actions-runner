@@ -1,0 +1,16 @@
+# Copyright 2021 Canonical
+# See LICENSE file for licensing details.
+
+options:
+  repository:
+    type: string
+    description: |
+      URL to repository
+  token:
+    type: string
+    description: |
+      Token
+  labels:
+    type: string
+    description: |
+      Labels

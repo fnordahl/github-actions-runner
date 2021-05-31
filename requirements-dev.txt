@@ -1,0 +1,4 @@
+coverage
+flake8
+# ops >= 1.2.0
+git+https://github.com/canonical/operator.git#egg=ops
