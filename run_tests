@@ -1,0 +1,17 @@
+#!/bin/sh -e
+# Copyright 2021 Canonical
+# See LICENSE file for licensing details.
+
+VENV=venv
+
+if [ -z "$VIRTUAL_ENV" ]; then
+    if [ ! -d "$VENV" ]; then
+        virtualenv --python python3 $VENV
+	$VENV/bin/pip install -r requirements-dev.txt
+    fi
+    . venv/bin/activate
+fi
+
+flake8
+coverage run --branch --source=src -m unittest -v "$@"
+coverage report -m
