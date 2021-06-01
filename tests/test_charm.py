@@ -64,6 +64,14 @@ class TestCharm(test_utils.PatchHelper):
                                             '.runner')),
         ])
 
+    def test__ensure_runner_running(self):
+        self.patch_charm('_confirm_runner_configured')
+        container = unittest.mock.MagicMock()
+        container.get_service().is_running.return_value = False
+        self.harness.charm._ensure_runner_running(container)
+        container.start.assert_called_once_with(charm.RUNNER_PEBBLE_SVC)
+        self._confirm_runner_configured.assert_called_once_with(container)
+
     def test__ensure_pebble_layer(self):
         self.patch_charm('_on_config_changed')
         self.harness.update_config({
@@ -101,39 +109,36 @@ class TestCharm(test_utils.PatchHelper):
         container.add_layer.assert_called_once_with(
             'runner', expected_plan, combine=True)
 
-    def test__handle_service(self):
+    def test__handle_runner(self):
         self.patch_charm('_ensure_pebble_layer')
         self.patch_charm('_reset_runner')
-        self.patch_charm('_confirm_runner_configured')
+        self.patch_charm('_ensure_runner_running')
         container = unittest.mock.MagicMock()
         # Layer not changed, service not running, and fails to start
-        self.harness.charm._handle_service(container)
-        self._confirm_runner_configured.assert_called_once_with(container)
+        self.harness.charm._handle_runner(container)
+        self._ensure_runner_running.assert_called_once_with(container)
         self.assertEqual(
             self.harness.charm.unit.status,
             ops.model.BlockedStatus(
                 'Runner failed to start. '
                 'Confirm repository URL, token and check logs.'))
         # Layer not changed, service not running
-        container.reset_mock()
-        container.get_service().is_running.return_value = False
-        self._confirm_runner_configured.return_value = True
-        self.harness.charm._handle_service(container)
+        self._ensure_runner_running.return_value = True
+        self.harness.charm._handle_runner(container)
         self.assertEqual(
             self.harness.charm.unit.status,
             ops.model.ActiveStatus())
-        container.autostart.assert_called_once_with()
         # Layer changed while service is running
-        container.reset_mock()
+        self._reset_runner.reset_mock()
+        self._ensure_runner_running.reset_mock()
         self._ensure_pebble_layer.return_value = True
-        container.get_service().is_running.return_value = False
-        self._confirm_runner_configured.return_value = True
-        self.harness.charm._handle_service(container)
+        self._ensure_runner_running.return_value = True
+        self.harness.charm._handle_runner(container)
         self.assertEqual(
             self.harness.charm.unit.status,
             ops.model.ActiveStatus())
         self._reset_runner.assert_called_once_with(container)
-        container.autostart.assert_called_once_with()
+        self._ensure_runner_running.assert_called_once_with(container)
 
     def test__on_github_actions_runner_pebble_ready(self):
         self.maxDiff = None
@@ -186,8 +191,8 @@ class TestCharm(test_utils.PatchHelper):
                          ops.model.ActiveStatus())
 
     def test__on_config_changed(self):
-        self.patch_charm('_handle_service')
+        self.patch_charm('_handle_runner')
         container = self.harness.model.unit.get_container(
             'github-actions-runner')
         self.harness.charm.on.config_changed.emit()
-        self._handle_service.assert_called_once_with(container)
+        self._handle_runner.assert_called_once_with(container)

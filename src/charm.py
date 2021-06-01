@@ -59,6 +59,12 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             except ops.pebble.PathError:
                 pass
 
+    def _ensure_runner_running(self, container: ops.model.Container) -> bool:
+        """Ensure the runner service is started and configured."""
+        if not container.get_service(RUNNER_PEBBLE_SVC).is_running():
+            container.start(RUNNER_PEBBLE_SVC)
+        return self._confirm_runner_configured(container)
+
     def _ensure_pebble_layer(self, container: ops.model.Container) -> bool:
         """Ensure the Pebble plan matches our desired state.
 
@@ -96,23 +102,19 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             return True
         return False
 
-    def _handle_service(self, container: ops.model.Container):
+    def _handle_runner(self, container: ops.model.Container):
         """Handle service life cycle on change events."""
         # Add Pebble config layer using the Pebble API
         if self._ensure_pebble_layer(container):
             # Layer changed, reconfigure runner
             self._reset_runner(container)
-        # Autostart any services that were defined with startup: enabled
-        if not container.get_service(RUNNER_PEBBLE_SVC).is_running():
-            container.autostart()
-        # Confirm that the service actually configured itself and started
-        if self._confirm_runner_configured(container):
-            self.unit.status = ops.model.ActiveStatus()
-        else:
+        if not self._ensure_runner_running(container):
             container.stop(RUNNER_PEBBLE_SVC)
             self.unit.status = ops.model.BlockedStatus(
                 'Runner failed to start. '
                 'Confirm repository URL, token and check logs.')
+            return
+        self.unit.status = ops.model.ActiveStatus()
 
     def _on_github_actions_runner_pebble_ready(
             self, event: ops.charm.PebbleReadyEvent):
@@ -121,14 +123,14 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
         container = event.workload
 
         # Handle the service
-        self._handle_service(container)
+        self._handle_runner(container)
 
     def _on_config_changed(self, _):
         """Compare runtime state to desired state and update if necessary."""
         container = self.unit.get_container('github-actions-runner')
 
         # Handle the service
-        self._handle_service(container)
+        self._handle_runner(container)
 
 
 if __name__ == '__main__':
