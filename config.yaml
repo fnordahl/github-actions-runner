@@ -5,12 +5,25 @@ options:
   repository:
     type: string
     description: |
-      URL to repository
+      Full HTTPS URL to GitHub repository.
   runner-token:
     type: string
     description: |
-      GitHub Runner Token
+      GitHub Runner Token for runner registration.
+
+      Note that the GitHub Runner Token is valid for 60 minutes for initial
+      deployment, and continues to be valid as long as your runner deployment
+      is connected to GitHub. 
+
+      In the event of loss of connectivity or on subsequent changes to the
+      deployment you may need to provide the charm with a new runner token.
   labels:
     type: string
     description: |
-      Labels
+      A comma separated list of custom labels to assign to the runners.
+
+      You can use labels to organize your self-hosted runners based on their
+      characteristics.
+      
+      Note that GitHub will automatically assign the label 'self-hosted', along
+      with operating system and architecture specific labels.
