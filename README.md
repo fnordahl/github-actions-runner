@@ -15,7 +15,7 @@ for more information.
 
 Then you can deploy the GitHub Actions Runner Charmed Operator:
 
-    juju deploy --channel edge \
+    juju deploy --channel beta \
         --resource github-actions-runner=myoung34/github-runner:latest \
         --config repository=https://github.com/github/your-repository \
         --config runner-token=YOUR-RUNNER-TOKEN \
