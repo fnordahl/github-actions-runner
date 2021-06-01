@@ -18,7 +18,7 @@ Then you can deploy the GitHub Actions Runner Charmed Operator:
     juju deploy \
         --resource github-actions-runner=myoung34/github-runner:latest \
         --config repository=https://github.com/github/your-repository \
-        --config token=YOUR-RUNNER-TOKEN \
+        --config runner-token=YOUR-RUNNER-TOKEN \
         github-actions-runner
 
 To scale out your deployment:

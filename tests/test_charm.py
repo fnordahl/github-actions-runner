@@ -76,7 +76,7 @@ class TestCharm(test_utils.PatchHelper):
         self.patch_charm('_on_config_changed')
         self.harness.update_config({
             'repository': 'fakerepo',
-            'token': 'faketoken',
+            'runner-token': 'faketoken',
             'labels': 'fakelabel',
         })
         self.maxDiff = None
@@ -150,7 +150,7 @@ class TestCharm(test_utils.PatchHelper):
         self.assertEqual(initial_plan.to_yaml(), '{}\n')
         self.harness.update_config({
             'repository': 'fakerepo',
-            'token': 'faketoken',
+            'runner-token': 'faketoken',
             'labels': 'fakelabel',
         })
         # Expected plan after Pebble ready with default config

@@ -6,10 +6,10 @@ options:
     type: string
     description: |
       URL to repository
-  token:
+  runner-token:
     type: string
     description: |
-      Token
+      GitHub Runner Token
   labels:
     type: string
     description: |

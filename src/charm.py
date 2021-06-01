@@ -85,7 +85,7 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
                             self.model.name,
                             self.unit.name.replace('/', '-')),
                         'REPO_URL': self.model.config['repository'],
-                        'RUNNER_TOKEN': self.model.config['token'],
+                        'RUNNER_TOKEN': self.model.config['runner-token'],
                         'LABELS': self.model.config.get('labels', ''),
                     }
                 }
