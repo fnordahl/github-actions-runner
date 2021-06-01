@@ -17,6 +17,7 @@ import ops.pebble
 logger = logging.getLogger(__name__)
 
 RUNNER_HOME = '/actions-runner'
+RUNNER_PEBBLE_SVC = 'runner'
 
 
 class GithubActionsRunnerCharm(ops.charm.CharmBase):
@@ -49,6 +50,8 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
     def _reset_runner(container: ops.model.Container):
         """Reset runner configuration."""
         logging.info('Resetting runner configuration')
+        if container.get_service(RUNNER_PEBBLE_SVC).is_running():
+            container.stop(RUNNER_PEBBLE_SVC)
         for filename in ('.credentials', '.credentials_rsaparams',
                          '.env', '.path', '.runner'):
             try:
@@ -65,13 +68,12 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             'summary': 'GitHub Actions Runner layer',
             'description': 'pebble config layer for GitHub Actions Runner',
             'services': {
-                'runner': {
+                RUNNER_PEBBLE_SVC: {
                     'override': 'replace',
-                    'summary': 'runner',
+                    'summary': RUNNER_PEBBLE_SVC,
                     'command': '/entrypoint.sh {}'.format(
                         os.path.join(RUNNER_HOME, 'run.sh')),
                     'startup': 'enabled',
-                    # 'user': 'runner',
                     'environment': {
                         'RUNNER_NAME': '{}-{}'.format(
                             self.model.name,
@@ -90,7 +92,7 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             logging.info('runtime_services: "{}"'
                          .format(runtime_services))
             # Update the plan
-            container.add_layer('runner', desired_layer, combine=True)
+            container.add_layer(RUNNER_PEBBLE_SVC, desired_layer, combine=True)
             return True
         return False
 
@@ -99,17 +101,15 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
         # Add Pebble config layer using the Pebble API
         if self._ensure_pebble_layer(container):
             # Layer changed, reconfigure runner
-            if container.get_service('runner').is_running():
-                container.stop('runner')
             self._reset_runner(container)
         # Autostart any services that were defined with startup: enabled
-        if not container.get_service('runner').is_running():
+        if not container.get_service(RUNNER_PEBBLE_SVC).is_running():
             container.autostart()
         # Confirm that the service actually configured itself and started
         if self._confirm_runner_configured(container):
             self.unit.status = ops.model.ActiveStatus()
         else:
-            container.stop('runner')
+            container.stop(RUNNER_PEBBLE_SVC)
             self.unit.status = ops.model.BlockedStatus(
                 'Runner failed to start. '
                 'Confirm repository URL, token and check logs.')

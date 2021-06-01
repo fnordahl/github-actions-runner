@@ -48,7 +48,9 @@ class TestCharm(test_utils.PatchHelper):
 
     def test__reset_runner(self):
         container = unittest.mock.MagicMock()
+        container.get_service().is_running.return_value = True
         self.harness.charm._reset_runner(container)
+        container.stop.assert_called_once_with(charm.RUNNER_PEBBLE_SVC)
         container.remove_path.assert_has_calls([
             unittest.mock.call(os.path.join(charm.RUNNER_HOME,
                                             '.credentials')),
@@ -124,13 +126,12 @@ class TestCharm(test_utils.PatchHelper):
         # Layer changed while service is running
         container.reset_mock()
         self._ensure_pebble_layer.return_value = True
-        container.get_service().is_running.side_effect = [True, False]
+        container.get_service().is_running.return_value = False
         self._confirm_runner_configured.return_value = True
         self.harness.charm._handle_service(container)
         self.assertEqual(
             self.harness.charm.unit.status,
             ops.model.ActiveStatus())
-        container.stop.assert_called_once_with('runner')
         self._reset_runner.assert_called_once_with(container)
         container.autostart.assert_called_once_with()
 
