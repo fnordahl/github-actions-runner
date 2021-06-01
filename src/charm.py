@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2021 Canonical
 # See LICENSE file for licensing details.
-#
-# Learn more at: https://juju.is/docs/sdk
 
 """GitHub Actions Runner Charmed Operator."""
 
@@ -32,7 +30,7 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
 
     @staticmethod
-    def _confirm_runner_configured(container):
+    def _confirm_runner_configured(container: ops.model.Container) -> bool:
         """Workaround for https://github.com/canonical/pebble/issues/46."""
         try:
             for attempt in tenacity.Retrying(
@@ -48,7 +46,7 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             return False
 
     @staticmethod
-    def _reset_runner(container):
+    def _reset_runner(container: ops.model.Container):
         """Reset runner configuration."""
         logging.info('Resetting runner configuration')
         for filename in ('.credentials', '.credentials_rsaparams',
@@ -58,11 +56,10 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             except ops.pebble.PathError:
                 pass
 
-    def _ensure_pebble_layer(self, container):
+    def _ensure_pebble_layer(self, container: ops.model.Container) -> bool:
         """Ensure the Pebble plan matches our desired state.
 
         :returns: True if something changed, False otherwise
-        :rtype: bool
         """
         desired_layer = {
             'summary': 'GitHub Actions Runner layer',
@@ -97,7 +94,7 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
             return True
         return False
 
-    def _handle_service(self, container):
+    def _handle_service(self, container: ops.model.Container):
         """Handle service life cycle on change events."""
         # Add Pebble config layer using the Pebble API
         if self._ensure_pebble_layer(container):
@@ -117,7 +114,8 @@ class GithubActionsRunnerCharm(ops.charm.CharmBase):
                 'Runner failed to start. '
                 'Confirm repository URL, token and check logs.')
 
-    def _on_github_actions_runner_pebble_ready(self, event):
+    def _on_github_actions_runner_pebble_ready(
+            self, event: ops.charm.PebbleReadyEvent):
         """Define and start runner using the Pebble API."""
         # Get a reference the container attribute on the PebbleReadyEvent
         container = event.workload

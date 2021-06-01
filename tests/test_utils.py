@@ -1,6 +1,7 @@
 # Copyright 2021 Canonical
 # See LICENSE file for licensing details.
 
+import typing
 import unittest
 import unittest.mock as mock
 
@@ -24,7 +25,7 @@ class PatchHelper(unittest.TestCase):
         self._patches = None
         self._patches_start = None
 
-    def patch(self, patchee, name=None, **kwargs):
+    def patch(self, patchee: str, name: str = None, **kwargs):
         """Patch a patchable thing.  Uses mock.patch() to do the work.
         Automatically unpatches at the end of the test.
 
@@ -44,7 +45,7 @@ class PatchHelper(unittest.TestCase):
         self._patches_start[name] = started
         setattr(self, name, started)
 
-    def patch_object(self, obj, attr, name=None, **kwargs):
+    def patch_object(self, obj: object, attr: str, name: str = None, **kwargs):
         """Patch a patchable thing.  Uses mock.patch.object() to do the work.
         Automatically unpatches at the end of the test.
 
@@ -52,8 +53,8 @@ class PatchHelper(unittest.TestCase):
         passed in the arguments.
 
         :param obj: an object that needs to have an attribute patched.
-        :param attr: <string> that represents the attribute being patched.
-        :param name: optional <string> name to call the mock.
+        :param attr: string that represents the attribute being patched.
+        :param name: optional string name to call the mock.
         :param **kwargs: any other args to pass to mock.patch()
         """
         mocked = mock.patch.object(obj, attr, **kwargs)
@@ -64,11 +65,11 @@ class PatchHelper(unittest.TestCase):
         self._patches_start[name] = started
         setattr(self, name, started)
 
-    def patch_charm(self, attr, return_value=None):
+    def patch_charm(self, attr: str, return_value: typing.Any = None):
         """Patch attributes of an instanciated charm instance.
 
-        :param attr: <string> that represents the attribute being patched.
-        :param return_value: <any> return value for the started mock.
+        :param attr: string that represents the attribute being patched.
+        :param return_value: return value for the started mock.
         """
         mocked = mock.patch.object(self.harness.charm, attr)
         self._patches[attr] = mocked
