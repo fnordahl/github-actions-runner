@@ -8,6 +8,7 @@ description: |
   for more information.
 summary: |
   Host your own fleet of GitHub Actions runners.
+docs: https://discourse.charmhub.io/t/github-actions-runner-docs-index/4656
 
 containers:
   github-actions-runner:
